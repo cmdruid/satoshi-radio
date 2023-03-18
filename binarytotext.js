@@ -14,7 +14,7 @@ function binaryToText(binary) {
     binary = binary.match(/.{1,8}/g);
     var arr = [];
     binary.forEach( function( digit ) {
-        arr.push( parseInt( digit.split('').reverse().join(''), 2 ) );
+        arr.push( parseInt( digit.split('').join(''), 2 ) );
     });
     var uint8 = new Uint8Array( arr );
     return hexToText( bytesToHex( uint8 ) );
