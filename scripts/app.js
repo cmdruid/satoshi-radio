@@ -37,12 +37,35 @@ if (navigator.mediaDevices.getUserMedia) {
     const d = 100  // Frame duration.
     const s = 10   // Sample delay.
 
+    var asciiBuffer = [];
+    const windowSize = 8;
+
     setInterval(async () => {
       // Dump frames to log.
-      console.log(await tones.getFrame({
+      const frame = (await tones.getFrame({
         frame_duration : d,
         sample_period  : s,
-      }))
+      }));
+      console.log(frame);
+      if(asciiBuffer.length >= windowSize){
+        console.log(`ASCII Buffer Filled: ${asciiBuffer}`)
+        asciiBuffer = [];
+      }
+      if(frame[2000] === true && frame[2500] === true){
+        console.log("Collision: Error!");
+      }
+      else if(frame[2000]){
+        console.log("Detected: 0");
+        asciiBuffer.push(0);
+      }
+      else if(frame[2500]){
+        console.log("Detected: 1");
+        asciiBuffer.push(1);
+      }
+      else{
+        console.log("Detected: Silence!");
+      }
+
     }, d)
 
     record.onclick = function() {
