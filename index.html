@@ -1,44 +1,119 @@
 <!DOCTYPE html>
-<html lang="en-us">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width">
-    <title>Web dictaphone</title>
-    <link href="styles/app.css" rel="stylesheet" type="text/css">
+<html>
+<head>
+  <meta charset="UTF-8">
+  <script src="index.js"></script>
+  <style>
+    * {
+      box-sizing: border-box;
+      font-size: 1.15rem;
+      font-family: Arial, sans-serif;
+    }
+    html {
+      max-width: 70ch;
+      padding: 3rem 1rem;
+      margin: auto;
+      line-height: 1.25;
+    }
+    h1 {
+      font-size: 2rem;
+    }
+    h2 {
+      font-size: 1.5rem;
+    }
+    input, textarea {
+      line-height: 1.25;
+      width: 100%;
+      height: 1.8rem;
+      font-size: 1.15rem;
+      border: 1px solid grey;
+    }
+    textarea {
+      height: auto;
+    }
+    @media screen and (max-width: 600px) {
+    }
+  </style>
+  <script>
+    var $ = document.querySelector.bind( document );
+    var $$ = document.querySelectorAll.bind( document );
+    var url_params = new URLSearchParams( window.location.search );
+    var url_keys = url_params.keys();
+    var $_GET = {}
+    for ( var key of url_keys ) $_GET[ key ] = url_params.get( key );
+      function convert( input ) {
+        var encoded = new TextEncoder().encode( input );
+        var binary = "";
+        encoded.forEach( function( binary_digit ) {
+          binary += (binary_digit >>> 0).toString(2).padStart( 8, "0" );
+        });
+        return binary;
+      }
+      var zero = 2000;
+      var one = 2500;
+      function waitSomeSeconds( num ) {
+        return new Promise( function( resolve, reject ) {
+          setTimeout( function() { resolve( "" ); }, parseInt( num ) * 1000 );
+        });
+      }
+    </script>
+
   </head>
   <body>
+    <h1>Welcome to Satoshi Jump</h1>
+    <textarea class="text_input" rows="10">This is a test</textarea>
+    <button class="send">Send</button>
+    <script>
+      var time = 1;
+      var responseTimeoutDelay = 5;
+      var binary = "";
+      var frame = {}
+      frame[ "init" ] = 0;
+      frame[ "length" ] = 8;
+      frame[ "message" ] = "";
+      frame[ "duration" ] = frame[ "length" ] * time;
+      frame[ "status" ] = 0;
 
-    <div class="wrapper">
+      async function sendPacket( binary ) {
+        return new Promise( function( resolve, reject ) {
+          for ( let i=0; i<binary.length; i++ ) {
+            (function(i) {
+              setTimeout(function() {
+                console.log(i + ">" + binary[i] + "\n");
+                if ( Number( binary[i] ) == 0 ) {
+                  playSound("Sine", 2000, 1);
+                } else if ( Number( binary[i] ) == 1 ) {
+                  playSound("Sine", 2500, 1);
+                }
+                if ( i == binary.length - 1 ) resolve( "message sent" );
+              }, time * 1000 * ( i + 1 ) )
+            })(i);
+          }
+        });
+      }
 
-      <header>
-        <h1>Web dictaphone</h1>
-      </header>
+      async function sendRecursively() {
+        frame[ "message" ] = binary.substring( frame[ "init" ], frame[ "init" ] + frame[ "length" ] );
+        console.log( "binary:", binary );
+        console.log( "message:", frame[ "message" ] );
+        var sent = await sendPacket( frame[ "message" ] );
+        console.log( sent );
+        //todo: don't wait 5 seconds if they give us an ack right away
+        console.log("waiting..." );
+        await waitSomeSeconds( 5 );
+        if ( !frame[ "status" ] ) {
+          sendRecursively();
+        } else {
+          frame[ "status" ] = 0;
+          frame[ "init" ] = frame[ "init" ] + frame[ "length" ];
+          sendRecursively();
+        }
+      }
 
-      <section class="main-controls">
-        <canvas class="visualizer" height="60px"></canvas>
-        <div id="buttons">
-          <button class="record">Record</button>
-          <button class="stop">Stop</button>
-        </div>
-      </section>
-
-      <section class="sound-clips">
-
-
-      </section>
-
-    </div>
-
-    <label for="toggle">❔</label>
-    <input type="checkbox" id="toggle">
-    <aside>
-      <h2>Information</h2>
-
-      <p>Web dictaphone is built using <a href="https://developer.mozilla.org/en-US/docs/Web/API/Navigator.getUserMedia">getUserMedia</a> and the <a href="https://developer.mozilla.org/en-US/docs/Web/API/MediaRecorder_API">MediaRecorder API</a>, which provides an easier way to capture Media streams.</p>
-
-      <p>Icon courtesy of <a href="http://findicons.com/search/microphone">Find Icons</a>. Thanks to <a href="http://soledadpenades.com/">Sole</a> for the Oscilloscope code!</p>
-    </aside>
-    <script src="scripts/app.js" type="module"></script>
-
+      $( '.send' ).onclick = async function() {
+        binary = convert( $( '.text_input' ).value );
+        sendRecursively();
+      }
+    </script>
   </body>
-</html>
+  </html>
