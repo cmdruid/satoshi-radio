@@ -1,5 +1,7 @@
 // set up basic variables for app
 
+import { ToneListener } from './tone.js'
+
 const record = document.querySelector('.record');
 const stop = document.querySelector('.stop');
 const soundClips = document.querySelector('.sound-clips');
@@ -12,7 +14,7 @@ stop.disabled = true;
 
 // visualiser setup - create web audio api context and canvas
 
-let audioCtx, source, analyser, prev = 0;
+let audioCtx;
 
 const canvasCtx = canvas.getContext("2d");
 
@@ -28,6 +30,20 @@ if (navigator.mediaDevices.getUserMedia) {
     const mediaRecorder = new MediaRecorder(stream);
 
     visualize(stream);
+    
+    // Create tone listener object.
+    const tones = new ToneListener(stream, [2000, 2500])
+
+    const d = 100  // Frame duration.
+    const s = 10   // Sample delay.
+
+    setInterval(async () => {
+      // Dump frames to log.
+      console.log(await tones.getFrame({
+        frame_duration : d,
+        sample_period  : s,
+      }))
+    }, d)
 
     record.onclick = function() {
       mediaRecorder.start();
@@ -100,6 +116,7 @@ if (navigator.mediaDevices.getUserMedia) {
     }
 
     mediaRecorder.ondataavailable = function(e) {
+      console.log('data available:', e.data)
       chunks.push(e.data);
     }
   }
@@ -118,15 +135,14 @@ function visualize(stream) {
   if(!audioCtx) {
     audioCtx = new AudioContext();
   }
-
-  source = audioCtx.createMediaStreamSource(stream);
-
-  analyser = audioCtx.createAnalyser();
-  analyser.fftSize = 2048;
+  const source   = audioCtx.createMediaStreamSource(stream);
+  console.log(source)
+  const analyser = audioCtx.createAnalyser();
+  analyser.fftSize = 4096;
   const bufferLength = analyser.frequencyBinCount;
   const dataArray = new Uint8Array(bufferLength);
 
-  source.connect(analyser);
+  source.connect(analyser)
   //analyser.connect(audioCtx.destination);
 
   draw()
@@ -137,7 +153,7 @@ function visualize(stream) {
 
     requestAnimationFrame(draw);
 
-    analyser.getByteTimeDomainData(dataArray);
+    analyser.getByteFrequencyData(dataArray);
 
     canvasCtx.fillStyle = 'rgb(200, 200, 200)';
     canvasCtx.fillRect(0, 0, WIDTH, HEIGHT);
@@ -149,20 +165,8 @@ function visualize(stream) {
 
     let sliceWidth = WIDTH * 1.0 / bufferLength;
     let x = 0;
-    let th = 50;
 
-
-    for(let i = 0; i < bufferLength; i += 1) {
-
-      if (
-        dataArray[i] > prev + th ||
-        dataArray[i] < prev - th
-      ) {
-        console.log('prev:', prev, th)
-        console.log('data:', dataArray[i])
-      }
-
-      prev = dataArray[i]
+    for (let i = 0; i < bufferLength; i += 1) {
 
       let v = dataArray[i] / 128.0;
       let y = v * HEIGHT/2;

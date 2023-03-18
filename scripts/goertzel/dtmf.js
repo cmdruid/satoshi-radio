@@ -1,4 +1,4 @@
-import { Goertzel } from './index.js'
+import { Goertzel } from './goertzel.js'
 
 export class DTMF { 
   constructor(options) {
