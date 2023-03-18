@@ -38,6 +38,7 @@ if (navigator.mediaDevices.getUserMedia) {
     const s = 10   // Sample delay.
 
     var asciiBuffer = "";
+    var messageBuffer = "";
     const windowSize = 8;
 
     setInterval(async () => {
@@ -50,8 +51,14 @@ if (navigator.mediaDevices.getUserMedia) {
       if(asciiBuffer.length >= windowSize){
         console.log(`ASCII Buffer Filled: ${asciiBuffer}`);
         //const test = "01000001"
-        console.log(binaryToText(asciiBuffer));
+        console.log(`Retrieved Buffer:${(asciiBuffer)}`);
+        asciiBuffer = binaryToText(asciiBuffer)
+        console.log(`Retrieved Character:${asciiBuffer}`);
+        console.log(`Retrieved CharCode:${asciiBuffer.charCodeAt()}`);
+        messageBuffer+=asciiBuffer;
         asciiBuffer = "";
+
+        console.log(`Retrieved messageBuffer:${messageBuffer}`);
       }
       if(frame[2000] === true && frame[2500] === true){
         console.log("Collision: Error!");
@@ -65,11 +72,10 @@ if (navigator.mediaDevices.getUserMedia) {
         asciiBuffer+=("1");
       }
       else{
-        console.log("Detected: Silence!");
+        //console.log("Detected: Silence!");
       }
 
-      //console.log(`asciiBuffer:${asciiBuffer}`)
-
+      console.log(`asciiBuffer:${asciiBuffer}`)
     }, d)
 
     record.onclick = function() {
