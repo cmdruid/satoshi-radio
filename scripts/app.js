@@ -37,7 +37,7 @@ if (navigator.mediaDevices.getUserMedia) {
     const d = 100  // Frame duration.
     const s = 10   // Sample delay.
 
-    var asciiBuffer = [];
+    var asciiBuffer = "";
     const windowSize = 8;
 
     setInterval(async () => {
@@ -49,22 +49,24 @@ if (navigator.mediaDevices.getUserMedia) {
       console.log(frame);
       if(asciiBuffer.length >= windowSize){
         console.log(`ASCII Buffer Filled: ${asciiBuffer}`)
-        asciiBuffer = [];
+        asciiBuffer = "";
       }
       if(frame[2000] === true && frame[2500] === true){
         console.log("Collision: Error!");
       }
       else if(frame[2000]){
         console.log("Detected: 0");
-        asciiBuffer.push(0);
+        asciiBuffer+=("0");
       }
       else if(frame[2500]){
         console.log("Detected: 1");
-        asciiBuffer.push(1);
+        asciiBuffer+=("1");
       }
       else{
         console.log("Detected: Silence!");
       }
+
+      //console.log(`asciiBuffer:${asciiBuffer}`)
 
     }, d)
 
