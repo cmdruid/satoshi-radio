@@ -2,7 +2,6 @@
  * Basic event emitter.
  * */
 
-
 export default class EventEmitter {
 
   constructor() {
@@ -43,6 +42,10 @@ export default class EventEmitter {
      * present them to each subscriber in the list.
      * */
     this._getEventListByName(eventName).forEach(function(fn) {
+      fn.apply(this, args);
+    }.bind(this));
+
+    this._getEventListByName('*').forEach(function(fn) {
       fn.apply(this, args);
     }.bind(this));
   }

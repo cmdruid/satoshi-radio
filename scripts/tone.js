@@ -1,101 +1,60 @@
-const tone_map = {
-  2500 : 212,
-  2000 : 171
+import EventEmitter from './emitter.js'
+import { DTMF }     from './goertzel/index.js'
+
+const DEFAULT_CONFIG = {
+  // sample rate of the audio buffer being given to the dtmf object.
+  sampleRate: 48000,
+  // filters out "bad" energy peaks. Can be any number between 1 and infinity.
+  peakFilterSensitivity: 1.4,
+  //
+  energyThreshold: 0.0001,
+  // Requires that a DTMF character be repeated enough times across buffers to be considered a valid DTMF tone.
+  repeatMin: 6,
+  // decides how much the buffers are downsampled(by skipping every Nth sample).
+  downsampleRate: 1,
+  // gets passed to the goertzel object that gets created by the dtmf object. This is the noise threshold value.
+  threshold: 0.005
 }
 
-export class ToneListener {
+export class ToneEmitter extends EventEmitter {
 
-  constructor (stream, tones, config = {}) {
-    
+  constructor (stream, config = DEFAULT_CONFIG) {
+    super()
     this.ctx      = new AudioContext()
     this.source   = this.ctx.createMediaStreamSource(stream)
-    this.analyser = this.ctx.createAnalyser()
-
-    this.analyser.fftSize = config.fftSize || 4096
-    this.thold    = config.thold           || 200
+    this.analyzer = this.ctx.createAnalyser()
+    // analyser.fftSize = 4096;
+    this.dtmf     = new DTMF(config)
     this.buffer   = new Uint8Array(this.buffSize)
-    this.tones    = tones
+    this.source.connect(this.analyzer)
+    this.interval = null
 
-    this.source.connect(this.analyser)
+    this.dtmf.on('decode', (value) => {
+      if (value === null) return
+      if (value.length === 1) {
+        this.emit('char', value)
+        return
+      }
+      this.emit(value, this)
+      return
+    })
   }
 
   get buffSize () {
-    return this.analyser.frequencyBinCount
+    return this.analyzer.frequencyBinCount
   }
 
-  get fftSize () {
-    return this.analyser.fftSize
-  }
-
-  get freqmap () {
-    return Object.fromEntries(this.entries)
-  }
-
-  get entries () {
-    return this.tones.map(e => [e, false])
-  }
-
-  get sample () {
-    this.analyser.getByteFrequencyData(this.buffer)
-    const freqmap = this.freqmap
-    for (const t of this.tones) {
-      const idx = tone_map[t]
-      freqmap[t] = (this.buffer[idx] > this.thold)
+  listen() {
+    if (this.interval !== null) {
+      clearInterval(this.interval)
     }
-    return freqmap
-  }
-
-  get max () {
-    this.analyser.getByteFrequencyData(this.buffer)
-    let idx = 0, max = 0
-    for (let i = 0; i < this.buffSize; i++) {
-      const curr = this.buffer[i]
-      if (curr > max) {
-        idx = i
-        max = curr
-      }
-    }
-    return [ idx, max ]
-  }
-
-  getFrame({
-    frame_duration = 100,
-    sample_period  = 10,
-    hit_threshold  = 0.5,
-  }) {
-    // Initialize our samples object.
-    const samples = {}
-    // Setup our sampler.
-    const sampler = setInterval(() => {
-      // Grab the current sample.
-      const sample = this.sample
-      // Iterate through the records in the sample.
-      for (const [ k, v ] of Object.entries(sample)) {
-        // If key in samples is not an array, create it.
-        if (!Array.isArray(samples[k])) {
-          samples[k] = []
-        }
-        // Push sample to the matching key in samples array.
-        samples[k].push(sample[k])
-      }
-    }, sample_period)
-    // Clear the sampler after the duration has passed.
-    
-    // console.log('samples:', samples)
-    
-    return new Promise((res, rej) => {
-      setTimeout(() => {
-        clearInterval(sampler)
-        const map = this.freqmap
-        const thold = (frame_duration / sample_period) * hit_threshold
-        for (const key of Object.keys(samples)) {
-          // console.log('key:', key)
-          // console.log('sample:', samples[key])
-          const hits = samples[key].filter(e => e === true).length
-          map[key] = (hits >= thold)
-        }
-        res(map)
-      }, frame_duration)
+    this.interval = setInterval(() => {
+      this.analyzer.getByteTimeDomainData(this.buffer)
+      this.dtmf.processBuffer(this.buffer)
     })
+  }
+
+  cancel() {
+    clearInterval(this.interval)
   }
 }
