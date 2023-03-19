@@ -74,8 +74,8 @@ if (navigator.mediaDevices.getUserMedia) {
       else{
         //console.log("Detected: Silence!");
       }
-
-      console.log(`asciiBuffer:${asciiBuffer}`)
+      console.log(hex_to_ascii('54'));
+      console.log(`asciiBuffer:${asciiBuffer}`);
     }, d)
 
     record.onclick = function() {
@@ -185,6 +185,16 @@ function binaryToText(binary) {
     var uint8 = new Uint8Array( arr );
     return hexToText( bytesToHex( uint8 ) );
 }
+
+function hex_to_ascii(str1)
+ {
+  var hex  = str1.toString();
+  var str = '';
+  for (var n = 0; n < hex.length; n += 2) {
+    str += String.fromCharCode(parseInt(hex.substr(n, 2), 16));
+  }
+  return str;
+ }
 
 function visualize(stream) {
   if(!audioCtx) {
