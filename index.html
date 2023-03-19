@@ -88,7 +88,7 @@
 
       function constructMessagePreamble(binary){
         //start, size, data, checksum
-        const messageSize = convert( binary.length.toString());
+        const messageSize = convert( (binary.length/2).toString());
         const windowSize = convert("3");
         console.log(`messageSize:${messageSize}`);
         return"G" + "L" + messageSize.toUpperCase() + "K" + windowSize.toUpperCase();
@@ -103,7 +103,7 @@
       function getChecksum(data){
         //start, size, data, checksum
         const {Buff} = window.buffUtils;
-        const cs = Buff.hex(data).digest.hex.slice(0,3);
+        const cs = Buff.hex(data).digest.hex.slice(0,6);
         console.log(typeof(cs));
         return cs;
       }
