@@ -86,12 +86,18 @@
         }, milliseconds);
       }
 
-      async function sendPacket( binary ) {
+      function constructControlFlowPreamble(binary){
         //start, size, data, checksum
         const messageSize = convert( binary.length.toString());
         const windowSize = convert("3");
         console.log(`messageSize:${messageSize}`);
-        binary = "G" + "L" + messageSize.toUpperCase() + "K" + windowSize.toUpperCase() + binary.toUpperCase() + "J";
+        return"G" + "L" + messageSize.toUpperCase() + "K" + windowSize.toUpperCase()
+      }
+
+      async function sendPacket( binary ) {
+        //start, size, data, checksum
+        const preamble = constructControlFlowPreamble(binary);
+        binary = preamble + binary.toUpperCase() + "J"; 
         return new Promise( function( resolve, reject ) {
           for ( let i=0; i<binary.length; i++ ) {
             (function(i) {
