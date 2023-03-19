@@ -34,8 +34,8 @@ export class ToneEmitter extends EventEmitter {
     this.buffer   = new Uint8Array(this.buffSize)
     this.source.connect(this.analyzer)
     this.interval = null
-    this.debounce = false
     this.charbuff = ''
+    this.bounceState = false
 
     for (const key of Object.keys(config)) {
       this.config[key] = config[key]
@@ -43,24 +43,27 @@ export class ToneEmitter extends EventEmitter {
 
     this.dtmf.on('decode', (value) => {
       if (value === null) return
-      if (!this.debounce) {
-        if (value.length === 1) {
-          this.charbuff += value
-          // this.emit('char', value)
-          if (this.charbuff.length === 2) {
-            const char = Buff.hex(this.charbuff).str
-            this.charbuff = ''
-            this.emit('char', char)
-          }
-        } else { this.emit(value, this) }
-        this.debounce = true
-        setTimeout(() => this.debounce = false, this.config.rateLimit)
-      }
+      if (this.debounce)  return
+      if (value.length === 1) {
+        this.charbuff += value
+        if (this.charbuff.length === 2) {
+          this.emit('data', Buff.hex(this.charbuff).str)
+          this.charbuff = ''
+        }
+      } else { this.emit('ctrl', value) }
     })
   }
 
   get buffSize () {
     return this.analyzer.frequencyBinCount
+  }
+
+  get debounce() {
+    if (!this.bounceState) {
+      this.bouceState = true
+      setTimeout(() => this.bounceState = false, this.config.rateLimit)
+      return false
+    } else { return true }
   }
 
   listen() {
