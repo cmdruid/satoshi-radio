@@ -14,7 +14,7 @@ if (navigator.mediaDevices.getUserMedia) {
 
     const emitter = new ToneEmitter(stream)
 
-    emitter.on('*', (value) => console.log('emit:', value))
+    emitter.on('char', (value) => console.log('emit:', value))
 
     emitter.listen()
   }
