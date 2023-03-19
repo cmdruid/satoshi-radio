@@ -1,4 +1,5 @@
-import { Goertzel } from './goertzel.js'
+import { Goertzel }   from './goertzel.js'
+import { freq_table } from './table.js'
 
 export class DTMF { 
   constructor(options) {
@@ -8,38 +9,14 @@ export class DTMF {
       energyThreshold:  0,
       decibelThreshold: 0,
       repeatMin:        0,
-      sampleRate:       44100
+      sampleRate:       44100,
+      frequencyTable: freq_table
     };
     for (let option in options) {
       this.options[option] = options[option];
     }
     this.sampleRate = this.options.sampleRate / this.options.downsampleRate;
-    this.frequencyTable = {
-      [697]: {
-        [1209]: '1',
-        [1336]: '2', //
-        [1477]: '3',
-        [1633]: 'A'
-      },
-      [770]: {
-        [1209]: '4',
-        [1336]: '5',
-        [1477]: '6',
-        [1633]: 'B'
-      },
-      [852]: {
-        [1209]: '7',
-        [1336]: '8',
-        [1477]: '9',
-        [1633]: 'C'
-      },
-      [941]: {
-        [1209]: '*',
-        [1336]: '0',
-        [1477]: '#',
-        [1633]: 'D'
-      }
-    };
+    this.frequencyTable = this.options.frequencyTable
     this.lowFrequencies = [];
     for (var key in this.frequencyTable) {
       this.lowFrequencies.push(parseInt(key));
