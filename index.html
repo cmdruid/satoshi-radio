@@ -108,8 +108,7 @@
 
       async function sendPacket( binary ) {
         //start, size, data, checksum
-        const messagePreamble = constructMessagePreamble(binary);
-        binary = messagePreamble + binary.toUpperCase() + "J"; 
+        binary = binary.toUpperCase(); 
         return new Promise( function( resolve, reject ) {
           for ( let i=0; i<binary.length; i++ ) {
             (function(i) {
@@ -230,7 +229,8 @@ async function sendRecursively() {
   frame[ "message" ] = binary.substring( frame[ "init" ], frame[ "init" ] + frame[ "length" ] );
   console.log( "binary:", binary );
   console.log( "message:", frame[ "message" ] );
-  var sent = await sendPacket( binary );
+  var messagePreamble = await sendPacket(constructMessagePreamble(binary));
+  var sent = await sendPacket( binary + "J");
         //var sent = await sendPacket( frame[ "message" ] );
   console.log( sent );
         //todo: don't wait 5 seconds if they give us an ack right away
