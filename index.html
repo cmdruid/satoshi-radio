@@ -53,7 +53,7 @@
         });
       }
     </script>
-
+    <script src="https://unpkg.com/@cmdcode/buff-utils"></script>
   </head>
   <body>
     <h1>Welcome to Satoshi Jump</h1>
@@ -86,18 +86,30 @@
         }, milliseconds);
       }
 
-      function constructControlFlowPreamble(binary){
+      function constructMessagePreamble(binary){
         //start, size, data, checksum
         const messageSize = convert( binary.length.toString());
         const windowSize = convert("3");
         console.log(`messageSize:${messageSize}`);
-        return"G" + "L" + messageSize.toUpperCase() + "K" + windowSize.toUpperCase()
+        return"G" + "L" + messageSize.toUpperCase() + "K" + windowSize.toUpperCase();
+      }
+
+      function constructWindowPreamble(windowData){
+        return "G" + getChecksum(windowData);
+      }
+
+      function getChecksum(data){
+        //start, size, data, checksum
+        const {Buff} = window.buffUtils;
+        const cs = Buff.hex(data).digest.hex.slice(0,3);
+        console.log(typeof(cs));
+        return cs;
       }
 
       async function sendPacket( binary ) {
         //start, size, data, checksum
-        const preamble = constructControlFlowPreamble(binary);
-        binary = preamble + binary.toUpperCase() + "J"; 
+        const messagePreamble = constructMessagePreamble(binary);
+        binary = messagePreamble + binary.toUpperCase() + "J"; 
         return new Promise( function( resolve, reject ) {
           for ( let i=0; i<binary.length; i++ ) {
             (function(i) {
