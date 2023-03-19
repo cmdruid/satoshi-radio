@@ -89,8 +89,9 @@
       async function sendPacket( binary ) {
         //start, size, data, checksum
         const messageSize = convert( binary.length.toString());
+        const windowSize = convert("3");
         console.log(`messageSize:${messageSize}`);
-        binary = "G" + "L" + messageSize.toUpperCase() +binary.toUpperCase() + "J";
+        binary = "G" + "L" + messageSize.toUpperCase() + "K" + windowSize.toUpperCase() + binary.toUpperCase() + "J";
         return new Promise( function( resolve, reject ) {
           for ( let i=0; i<binary.length; i++ ) {
             (function(i) {
@@ -180,22 +181,22 @@
                   playSound(770, timeover2);
                   playSound(1913, timeover2);
                 }
-                //size
+                //window-size
                 if ( binary[i] == "K" ) {
                   playSound(852, timeover2);
                   playSound(1776, timeover2);
                 }
-                //res1
+                //message-size
                 if ( binary[i] == "L" ) {
                   playSound(852, timeover2);
                   playSound(1913, timeover2);
                 }
-                //res2
+                //window-checksum
                 if ( binary[i] == "M" ) {
                   playSound(852, timeover2);
                   playSound(1776, timeover2);
                 }
-                //res3
+                //reserved
                 if ( binary[i] == "N" ) {
                   playSound(852, timeover2);
                   playSound(1913, timeover2);
