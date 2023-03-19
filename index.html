@@ -2,7 +2,6 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <script src="index.js"></script>
   <style>
     * {
       box-sizing: border-box;
@@ -62,7 +61,7 @@
     <button class="send">Send</button>
     <script>
       var time = 0.5;
-      var timeover2 = time / 2;
+      var timeover2 = ( time / 2 ) * 1000;
       // var timeover2 = time;
       var responseTimeoutDelay = 5;
       var binary = "";
@@ -73,6 +72,20 @@
       frame[ "duration" ] = frame[ "length" ] * time;
       frame[ "status" ] = 0;
 
+      function playSound( hertz, milliseconds ) {
+        var a=new AudioContext();
+        var oscillator=a.createOscillator();
+        oscillator.type="sine";
+        gainNode=a.createGain();
+        oscillator.connect(gainNode);
+        gainNode.connect(a.destination);
+        oscillator.frequency.value=hertz;
+        oscillator.start();
+        setTimeout(()=>{
+          oscillator.stop();
+        }, milliseconds);
+      }
+
       async function sendPacket( binary ) {
         //start, size, data, checksum
         binary = "G" + binary.toUpperCase() + "J";
@@ -82,139 +95,139 @@
               setTimeout(function() {
                 console.log(i + ">" + binary[i] + "\n");
                 if ( Number( binary[i] ) == 0 ) {
-                  playSound("Sine", 941, timeover2);
-                  playSound("Sine", 1336, timeover2);
+                  playSound(941, timeover2);
+                  playSound(1336, timeover2);
                 }
                 if ( Number( binary[i] ) == 1 ) {
-                  playSound("Sine", 697, timeover2);
-                  playSound("Sine", 1209, timeover2);
+                  playSound(697, timeover2);
+                  playSound(1209, timeover2);
                 }
                 if ( Number( binary[i] ) == 2 ) {
-                  playSound("Sine", 697, timeover2);
-                  playSound("Sine", 1336, timeover2);
+                  playSound(697, timeover2);
+                  playSound(1336, timeover2);
                 }
                 if ( Number( binary[i] ) == 3 ) {
-                  playSound("Sine", 697, timeover2);
-                  playSound("Sine", 1447, timeover2);
+                  playSound(697, timeover2);
+                  playSound(1447, timeover2);
                 }
                 if ( Number( binary[i] ) == 4 ) {
-                  playSound("Sine", 770, timeover2);
-                  playSound("Sine", 1209, timeover2);
+                  playSound(770, timeover2);
+                  playSound(1209, timeover2);
                 }
                 if ( Number( binary[i] ) == 5 ) {
-                  playSound("Sine", 770, timeover2);
-                  playSound("Sine", 1336, timeover2);
+                  playSound(770, timeover2);
+                  playSound(1336, timeover2);
                 }
                 if ( Number( binary[i] ) == 6 ) {
-                  playSound("Sine", 770, timeover2);
-                  playSound("Sine", 1447, timeover2);
+                  playSound(770, timeover2);
+                  playSound(1447, timeover2);
                 }
                 if ( Number( binary[i] ) == 7 ) {
-                  playSound("Sine", 852, timeover2);
-                  playSound("Sine", 1209, timeover2);
+                  playSound(852, timeover2);
+                  playSound(1209, timeover2);
                 }
                 if ( Number( binary[i] ) == 8 ) {
-                  playSound("Sine", 852, timeover2);
-                  playSound("Sine", 1336, timeover2);
+                  playSound(852, timeover2);
+                  playSound(1336, timeover2);
                 }
                 if ( Number( binary[i] ) == 9 ) {
-                  playSound("Sine", 852, timeover2);
-                  playSound("Sine", 1447, timeover2);
+                  playSound(852, timeover2);
+                  playSound(1447, timeover2);
                 }
                 if ( binary[i] == "A" ) {
-                  playSound("Sine", 697, timeover2);
-                  playSound("Sine", 1633, timeover2);
+                  playSound(697, timeover2);
+                  playSound(1633, timeover2);
                 }
                 if ( binary[i] == "B" ) {
-                  playSound("Sine", 770, timeover2);
-                  playSound("Sine", 1633, timeover2);
+                  playSound(770, timeover2);
+                  playSound(1633, timeover2);
                 }
                 if ( binary[i] == "C" ) {
-                  playSound("Sine", 852, timeover2);
-                  playSound("Sine", 1633, timeover2);
+                  playSound(852, timeover2);
+                  playSound(1633, timeover2);
                 }
                 if ( binary[i] == "D" ) {
-                  playSound("Sine", 941, timeover2);
-                  playSound("Sine", 1633, timeover2);
+                  playSound(941, timeover2);
+                  playSound(1633, timeover2);
                 }
                 if ( binary[i] == "E" ) {
-                  playSound("Sine", 941, timeover2);
-                  playSound("Sine", 1209, timeover2);
+                  playSound(941, timeover2);
+                  playSound(1209, timeover2);
                 }
                 if ( binary[i] == "F" ) {
-                  playSound("Sine", 941, timeover2);
-                  playSound("Sine", 1477, timeover2);
+                  playSound(941, timeover2);
+                  playSound(1477, timeover2);
                 }
                 //start
                 if ( binary[i] == "G" ) {
-                  playSound("Sine", 697, timeover2);
-                  playSound("Sine", 1776, timeover2);
+                  playSound(697, timeover2);
+                  playSound(1776, timeover2);
                 }
                 //ack
                 if ( binary[i] == "H" ) {
-                  playSound("Sine", 697, timeover2);
-                  playSound("Sine", 1913, timeover2);
+                  playSound(697, timeover2);
+                  playSound(1913, timeover2);
                 }
                 //nack
                 if ( binary[i] == "I" ) {
-                  playSound("Sine", 770, timeover2);
-                  playSound("Sine", 1776, timeover2);
+                  playSound(770, timeover2);
+                  playSound(1776, timeover2);
                 }
                 //stop
                 if ( binary[i] == "J" ) {
-                  playSound("Sine", 770, timeover2);
-                  playSound("Sine", 1913, timeover2);
+                  playSound(770, timeover2);
+                  playSound(1913, timeover2);
                 }
                 //size
                 if ( binary[i] == "K" ) {
-                  playSound("Sine", 852, timeover2);
-                  playSound("Sine", 1776, timeover2);
+                  playSound(852, timeover2);
+                  playSound(1776, timeover2);
                 }
                 //res1
                 if ( binary[i] == "L" ) {
-                  playSound("Sine", 852, timeover2);
-                  playSound("Sine", 1913, timeover2);
+                  playSound(852, timeover2);
+                  playSound(1913, timeover2);
                 }
                 //res2
                 if ( binary[i] == "M" ) {
-                  playSound("Sine", 852, timeover2);
-                  playSound("Sine", 1776, timeover2);
+                  playSound(852, timeover2);
+                  playSound(1776, timeover2);
                 }
                 //res3
                 if ( binary[i] == "N" ) {
-                  playSound("Sine", 852, timeover2);
-                  playSound("Sine", 1913, timeover2);
+                  playSound(852, timeover2);
+                  playSound(1913, timeover2);
                 }
                 if ( i == binary.length - 1 ) resolve( "message sent" );
               }, time * timelength * ( i + 1 ) )
-            })(i);
-          }
-        });
-      }
+})(i);
+}
+});
+}
 
-      async function sendRecursively() {
-        frame[ "message" ] = binary.substring( frame[ "init" ], frame[ "init" ] + frame[ "length" ] );
-        console.log( "binary:", binary );
-        console.log( "message:", frame[ "message" ] );
-        var sent = await sendPacket( binary );
+async function sendRecursively() {
+  frame[ "message" ] = binary.substring( frame[ "init" ], frame[ "init" ] + frame[ "length" ] );
+  console.log( "binary:", binary );
+  console.log( "message:", frame[ "message" ] );
+  var sent = await sendPacket( binary );
         //var sent = await sendPacket( frame[ "message" ] );
-        console.log( sent );
+  console.log( sent );
         //todo: don't wait 5 seconds if they give us an ack right away
-        console.log("waiting..." );
-        await waitSomeSeconds( 5 );
-        if ( !frame[ "status" ] ) {
+  console.log("waiting..." );
+  await waitSomeSeconds( 5 );
+  if ( !frame[ "status" ] ) {
           //sendRecursively();
-        } else {
-          frame[ "status" ] = 0;
-          frame[ "init" ] = frame[ "init" ] + frame[ "length" ];
-          sendRecursively();
-        }
-      }
+  } else {
+    frame[ "status" ] = 0;
+    frame[ "init" ] = frame[ "init" ] + frame[ "length" ];
+    sendRecursively();
+  }
+}
 
-      $( '.send' ).onclick = async function() {
-        binary = convert( $( '.text_input' ).value );
-        sendRecursively();
-      }
-    </script>
-  </body>
-  </html>
+$( '.send' ).onclick = async function() {
+  binary = convert( $( '.text_input' ).value );
+  sendRecursively();
+}
+</script>
+</body>
+</html>
