@@ -10,7 +10,46 @@ html, body {
 
 body {
   font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-  font-size: 0.8rem;
+  font-size: 1.5rem;
+  background-color: rgb(222, 246, 255);
+}
+
+.msgTitle {
+  padding-top: 1rem;
+  padding-bottom: 0.25rem;
+}
+
+#title {
+  font-family: monospace;
+  font-weight: 700;
+  font-size: 4rem;
+  margin-top: 2rem;
+  margin-bottom: 2rem;
+  background-color: #262626;
+  color:whitesmoke;
+  padding: 1rem;
+}
+
+#feed {
+  min-width: 500px;
+  min-height: 100px;
+  background-color: lightgrey;
+  padding: 0.5rem;
+  font-family: monospace;
+  margin-bottom: 1rem;
+}
+
+#msgBox {
+  min-width: 500px;
+  min-height: 350px;
+  background-color: lightgrey;
+  padding: 0.5rem;
+  font-family: monospace;
+  margin-bottom: 1rem;
+}
+
+#recv {
+  font-size: 1.5rem;
 }
 
 .wrapper {

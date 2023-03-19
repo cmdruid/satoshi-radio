@@ -12,13 +12,18 @@
     <div class="wrapper">
 
       <header>
-        <h1>Satoshi Radio</h1>
+        <h1 id="title">Satoshi Radio</h1>
       </header>
 
       <section class="main">
+        <p class="msgTitle">Data Stream:</p>
         <canvas class="visualizer" height="60px"></canvas>
         <div id="text">
-          <pre></pre>
+          
+          <pre id="feed"></pre>
+          <p class="msgTitle">Message Window:</p>
+          <pre id="msgBox">Now listening!</pre>
+          <button id="recv">Receive</button>
         </div>
       </section>
     </div>

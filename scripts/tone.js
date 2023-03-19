@@ -1,8 +1,6 @@
 import EventEmitter from './emitter.js'
 import { DTMF }     from './goertzel/index.js'
 
-const { Buff } = window.buffUtils
-
 const dc = new TextDecoder()
 
 const DEFAULT_CONFIG = {
@@ -11,7 +9,7 @@ const DEFAULT_CONFIG = {
   // filters out "bad" energy peaks. Can be any number between 1 and infinity.
   peakFilterSensitivity: 1.4,
   //
-  energyThreshold: 0.0001,
+  energyThreshold: 0.0005,
   // Requires that a DTMF character be repeated enough times across buffers to be considered a valid DTMF tone.
   repeatMin: 6,
   // decides how much the buffers are downsampled(by skipping every Nth sample).
@@ -34,7 +32,6 @@ export class ToneEmitter extends EventEmitter {
     this.buffer   = new Uint8Array(this.buffSize)
     this.source.connect(this.analyzer)
     this.interval = null
-    this.charbuff = ''
     this.bounceState = false
 
     for (const key of Object.keys(config)) {
@@ -45,11 +42,7 @@ export class ToneEmitter extends EventEmitter {
       if (value === null) return
       if (this.debounce)  return
       if (value.length === 1) {
-        this.charbuff += value
-        if (this.charbuff.length === 2) {
-          this.emit('data', Buff.hex(this.charbuff).str)
-          this.charbuff = ''
-        }
+        this.emit('data', value)
       } else { this.emit('ctrl', value) }
     })
   }
@@ -60,7 +53,7 @@ export class ToneEmitter extends EventEmitter {
 
   get debounce() {
     if (!this.bounceState) {
-      this.bouceState = true
+      this.bounceState = true
       setTimeout(() => this.bounceState = false, this.config.rateLimit)
       return false
     } else { return true }

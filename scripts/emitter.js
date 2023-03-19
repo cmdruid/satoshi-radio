@@ -46,7 +46,7 @@ export default class EventEmitter {
     }.bind(this));
 
     this._getEventListByName('*').forEach(function(fn) {
-      fn.apply(this, args);
+      fn.apply(this, [eventName, args]);
     }.bind(this));
   }
   
