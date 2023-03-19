@@ -53,6 +53,53 @@
         });
       }
     </script>
+    <script type="module">
+      import { ToneEmitter }    from './scripts/tone.js'
+      import { ToneController } from './scripts/controller.js'
+      const { Buff } = window.buffUtils
+
+      globalThis.globalStream = null
+
+
+if (navigator.mediaDevices.getUserMedia) {
+  console.log('getUserMedia supported.');
+
+  const constraints = { audio: true };
+
+  const onSuccess = (stream) => {
+    globalThis.globalStream = stream
+
+    const emitter = new ToneEmitter(stream)
+
+    let add_to_buffer = false
+    let messageBuffer = ''
+    let message       = ''
+
+    emitter.on('ctrl', (value) => {
+      if (value === 'ack') {
+        sessionStorage["ack_or_nack"] = "ack"
+      }
+
+      if (value === 'nack') {
+        sessionStorage["ack_or_nack"] = "nack"
+      }
+    })
+
+    const controller = new ToneController(emitter)
+
+    emitter.listen()
+  }
+
+  const onError = (err) => {
+    console.log('The following error occured: ' + err);
+  }
+
+  navigator.mediaDevices.getUserMedia(constraints).then(onSuccess, onError);
+
+} else {
+   console.log('getUserMedia not supported on your browser!');
+}
+    </script>
     <script src="https://unpkg.com/@cmdcode/buff-utils"></script>
   </head>
   <body>
@@ -64,7 +111,7 @@
       var timeover2 = ( time / 2 ) * 1000;
       // var timeover2 = time;
       var responseTimeoutDelay = 5;
-      var binary = "";
+      var hex = "";
       var frame = {}
       frame[ "init" ] = 0;
       frame[ "length" ] = 8;
@@ -86,12 +133,12 @@
         }, milliseconds);
       }
 
-      function constructMessagePreamble(binary){
+      function constructMessagePreamble(hex){
         //start, size, data, checksum
-        const messageSize = convert( (binary.length/2).toString());
-        const windowSize = convert("3");
+        const messageSize = parseInt( hex.length/2, 16 );
+        const windowSize = "03";
         console.log(`messageSize:${messageSize}`);
-        return"G" + "L" + messageSize.toUpperCase() + "K" + windowSize.toUpperCase();
+        return "G" + String( messageSize ).toUpperCase() + windowSize.toUpperCase() + "J";
       }
 
       function constructWindowPreamble(windowData){
@@ -108,149 +155,178 @@
         return cs;
       }
 
-      async function sendPacket( binary ) {
+      async function sendPacket( hex ) {
         //start, size, data, checksum
-        binary = binary.toUpperCase(); 
+        hex = hex.toUpperCase(); 
         return new Promise( function( resolve, reject ) {
-          for ( let i=0; i<binary.length; i++ ) {
+          for ( let i=0; i<hex.length; i++ ) {
             (function(i) {
               setTimeout(function() {
-                console.log(i + ">" + binary[i] + "\n");
-                if ( Number( binary[i] ) == 0 ) {
+                console.log(i + ">" + hex[i] + "\n");
+                if ( Number( hex[i] ) == 0 ) {
                   playSound(941, timeover2);
                   playSound(1336, timeover2);
                 }
-                if ( Number( binary[i] ) == 1 ) {
+                if ( Number( hex[i] ) == 1 ) {
                   playSound(697, timeover2);
                   playSound(1209, timeover2);
                 }
-                if ( Number( binary[i] ) == 2 ) {
+                if ( Number( hex[i] ) == 2 ) {
                   playSound(697, timeover2);
                   playSound(1336, timeover2);
                 }
-                if ( Number( binary[i] ) == 3 ) {
+                if ( Number( hex[i] ) == 3 ) {
                   playSound(697, timeover2);
                   playSound(1447, timeover2);
                 }
-                if ( Number( binary[i] ) == 4 ) {
+                if ( Number( hex[i] ) == 4 ) {
                   playSound(770, timeover2);
                   playSound(1209, timeover2);
                 }
-                if ( Number( binary[i] ) == 5 ) {
+                if ( Number( hex[i] ) == 5 ) {
                   playSound(770, timeover2);
                   playSound(1336, timeover2);
                 }
-                if ( Number( binary[i] ) == 6 ) {
+                if ( Number( hex[i] ) == 6 ) {
                   playSound(770, timeover2);
                   playSound(1447, timeover2);
                 }
-                if ( Number( binary[i] ) == 7 ) {
+                if ( Number( hex[i] ) == 7 ) {
                   playSound(852, timeover2);
                   playSound(1209, timeover2);
                 }
-                if ( Number( binary[i] ) == 8 ) {
+                if ( Number( hex[i] ) == 8 ) {
                   playSound(852, timeover2);
                   playSound(1336, timeover2);
                 }
-                if ( Number( binary[i] ) == 9 ) {
+                if ( Number( hex[i] ) == 9 ) {
                   playSound(852, timeover2);
                   playSound(1447, timeover2);
                 }
-                if ( binary[i] == "A" ) {
+                if ( hex[i] == "A" ) {
                   playSound(697, timeover2);
                   playSound(1633, timeover2);
                 }
-                if ( binary[i] == "B" ) {
+                if ( hex[i] == "B" ) {
                   playSound(770, timeover2);
                   playSound(1633, timeover2);
                 }
-                if ( binary[i] == "C" ) {
+                if ( hex[i] == "C" ) {
                   playSound(852, timeover2);
                   playSound(1633, timeover2);
                 }
-                if ( binary[i] == "D" ) {
+                if ( hex[i] == "D" ) {
                   playSound(941, timeover2);
                   playSound(1633, timeover2);
                 }
-                if ( binary[i] == "E" ) {
+                if ( hex[i] == "E" ) {
                   playSound(941, timeover2);
                   playSound(1209, timeover2);
                 }
-                if ( binary[i] == "F" ) {
+                if ( hex[i] == "F" ) {
                   playSound(941, timeover2);
                   playSound(1477, timeover2);
                 }
                 //start
-                if ( binary[i] == "G" ) {
+                if ( hex[i] == "G" ) {
                   playSound(697, timeover2);
                   playSound(1776, timeover2);
                 }
                 //ack
-                if ( binary[i] == "H" ) {
+                if ( hex[i] == "H" ) {
                   playSound(697, timeover2);
                   playSound(1913, timeover2);
                 }
                 //nack
-                if ( binary[i] == "I" ) {
+                if ( hex[i] == "I" ) {
                   playSound(770, timeover2);
                   playSound(1776, timeover2);
                 }
                 //stop
-                if ( binary[i] == "J" ) {
+                if ( hex[i] == "J" ) {
                   playSound(770, timeover2);
                   playSound(1913, timeover2);
                 }
-                //window-size
-                if ( binary[i] == "K" ) {
+                //size
+                if ( hex[i] == "K" ) {
                   playSound(852, timeover2);
                   playSound(1776, timeover2);
                 }
-                //message-size
-                if ( binary[i] == "L" ) {
+                //res1
+                if ( hex[i] == "L" ) {
                   playSound(852, timeover2);
                   playSound(1913, timeover2);
                 }
-                //window-checksum
-                if ( binary[i] == "M" ) {
-                  playSound(852, timeover2);
+                //res2
+                if ( hex[i] == "M" ) {
+                  playSound(941, timeover2);
                   playSound(1776, timeover2);
                 }
-                //reserved
-                if ( binary[i] == "N" ) {
-                  playSound(852, timeover2);
+                //res3
+                if ( hex[i] == "N" ) {
+                  playSound(941, timeover2);
                   playSound(1913, timeover2);
                 }
-                if ( i == binary.length - 1 ) resolve( "message sent" );
+                if ( i == hex.length - 1 ) resolve( "message sent" );
               }, time * timelength * ( i + 1 ) )
 })(i);
 }
 });
 }
 
-async function sendRecursively() {
-  frame[ "message" ] = binary.substring( frame[ "init" ], frame[ "init" ] + frame[ "length" ] );
-  console.log( "binary:", binary );
-  console.log( "message:", frame[ "message" ] );
-  var messagePreamble = await sendPacket(constructMessagePreamble(binary));
-  var windowPreamble = await sendPacket(constructWindowPreamble(binary));
-  var sent = await sendPacket( binary + "J");
-        //var sent = await sendPacket( frame[ "message" ] );
-  console.log( sent );
-        //todo: don't wait 5 seconds if they give us an ack right away
-  console.log("waiting..." );
-  await waitSomeSeconds( 5 );
-  if ( !frame[ "status" ] ) {
-          //sendRecursively();
-  } else {
-    frame[ "status" ] = 0;
-    frame[ "init" ] = frame[ "init" ] + frame[ "length" ];
-    sendRecursively();
+async function actOnAckOrNack( callback ) {
+  await sendPacket( callback );
+  var ack_or_nack = await getNoteUnlessItTimesOut("ack_or_nack",3);
+  sessionStorage["ack_or_nack"] = "";
+  if(ack_or_nack == "nack"){
+    await actOnAckOrNack( callback );
   }
 }
 
+async function sendRecursively( num ) {
+  frame[ "message" ] = hex.substring( frame[ "init" ], frame[ "init" ] + frame[ "length" ] );
+  console.log( "hex:", hex );
+  console.log( "message:", frame[ "message" ] );
+  console.log( "sending message preamble" );
+  if ( !num ) await actOnAckOrNack( await sendPacket( constructMessagePreamble(hex) ) );
+  console.log( "sending checksum preamble" );
+  if ( !num ) await sendPacket( constructWindowPreamble(hex) );
+  console.log( "sending data" );
+  await actOnAckOrNack( sendPacket( frame[ "message" ] ) );
+  if ( frame[ "message" ] ) sendRecursively( num );
+}
+
 $( '.send' ).onclick = async function() {
-  binary = convert( $( '.text_input' ).value );
+  hex = convert( $( '.text_input' ).value );
   sendRecursively();
+}
+
+sessionStorage[ "ack_or_nack" ] = "";
+
+async function getNoteUnlessItTimesOut( item, num_of_seconds_to_wait ) {
+   var started_waiting_time = Math.floor( Date.now() / 1000 );
+   async function isNoteSetYet( note_i_seek ) {
+       return new Promise( function( resolve, reject ) {
+           if ( !note_i_seek ) {
+               var current_time = Math.floor( Date.now() / 1000 );
+               if ( started_waiting_time + num_of_seconds_to_wait < current_time ) {
+                   resolve( "nack" );
+               }
+               setTimeout( async function() {
+                   var msg = await isNoteSetYet( sessionStorage[ item ] );
+                   resolve( msg );
+               }, 100 );
+           } else {
+               resolve( note_i_seek );
+           }
+       });
+   }
+   async function getTimeoutData() {
+       var note_i_seek = await isNoteSetYet( sessionStorage[ item ] );
+       return note_i_seek;
+   }
+   var returnable = await getTimeoutData();
+   return returnable;
 }
 </script>
 </body>
