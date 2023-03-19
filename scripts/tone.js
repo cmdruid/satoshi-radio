@@ -12,7 +12,7 @@ export class ToneListener {
     this.analyser = this.ctx.createAnalyser()
 
     this.analyser.fftSize = config.fftSize || 4096
-    this.thold    = config.thold   || 200
+    this.thold    = config.thold           || 200
     this.buffer   = new Uint8Array(this.buffSize)
     this.tones    = tones
 

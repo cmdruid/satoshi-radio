@@ -1,5 +1,6 @@
 // set up basic variables for app
 
+import { DTMF }         from './goertzel/index.js';
 import { ToneListener } from './tone.js'
 
 const record = document.querySelector('.record');
@@ -29,21 +30,24 @@ if (navigator.mediaDevices.getUserMedia) {
   let onSuccess = function(stream) {
     const mediaRecorder = new MediaRecorder(stream);
 
-    visualize(stream);
+    visualize(stream)
+
+    // DTMF
+    buffer_to_DTMF(stream)
     
     // Create tone listener object.
-    const tones = new ToneListener(stream, [2000, 2500])
+    // const tones = new ToneListener(stream, [2000, 2500])
 
     const d = 100  // Frame duration.
     const s = 10   // Sample delay.
 
-    setInterval(async () => {
-      // Dump frames to log.
-      console.log(await tones.getFrame({
-        frame_duration : d,
-        sample_period  : s,
-      }))
-    }, d)
+    // setInterval(async () => {
+    //   // Dump frames to log.
+    //   console.log(await tones.getFrame({
+    //     frame_duration : d,
+    //     sample_period  : s,
+    //   }))
+    // }, d)
 
     record.onclick = function() {
       mediaRecorder.start();
@@ -116,7 +120,6 @@ if (navigator.mediaDevices.getUserMedia) {
     }
 
     mediaRecorder.ondataavailable = function(e) {
-      console.log('data available:', e.data)
       chunks.push(e.data);
     }
   }
@@ -131,19 +134,45 @@ if (navigator.mediaDevices.getUserMedia) {
    console.log('getUserMedia not supported on your browser!');
 }
 
+async function buffer_to_DTMF(stream) {
+  const ctx      = new AudioContext()
+  const source   = ctx.createMediaStreamSource(stream)
+  const analyser = ctx.createAnalyser();
+  // analyser.fftSize = 4096;
+  const bufferLength = analyser.frequencyBinCount
+  const dataArray = new Uint8Array(bufferLength)
+
+  source.connect(analyser)
+
+  const dtmf = new DTMF({
+    sampleRate: 44100,
+    peakFilterSensitivity: 1.4,
+    energyThreshold: 0.0001,
+    repeatMin: 6,
+    downsampleRate: 1,
+    threshold: 0.005
+  })
+
+  dtmf.on('decode', (value) => console.log('dtmf decode:', value))
+
+  setInterval(() => {
+    analyser.getByteTimeDomainData(dataArray);
+    dtmf.processBuffer(dataArray)
+  })
+
+}
+
 function visualize(stream) {
-  if(!audioCtx) {
+  if (!audioCtx) {
     audioCtx = new AudioContext();
   }
-  const source   = audioCtx.createMediaStreamSource(stream);
-  console.log(source)
+  const source = audioCtx.createMediaStreamSource(stream);
   const analyser = audioCtx.createAnalyser();
   analyser.fftSize = 4096;
   const bufferLength = analyser.frequencyBinCount;
   const dataArray = new Uint8Array(bufferLength);
 
   source.connect(analyser)
-  //analyser.connect(audioCtx.destination);
 
   draw()
 
@@ -153,7 +182,7 @@ function visualize(stream) {
 
     requestAnimationFrame(draw);
 
-    analyser.getByteFrequencyData(dataArray);
+    analyser.getByteTimeDomainData(dataArray);
 
     canvasCtx.fillStyle = 'rgb(200, 200, 200)';
     canvasCtx.fillRect(0, 0, WIDTH, HEIGHT);

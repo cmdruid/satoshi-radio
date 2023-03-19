@@ -17,7 +17,7 @@ export class DTMF {
     this.frequencyTable = {
       [697]: {
         [1209]: '1',
-        [1336]: '2',
+        [1336]: '2', //
         [1477]: '3',
         [1633]: 'A'
       },
@@ -134,6 +134,9 @@ export class DTMF {
         lowFrequencyEnergy = energies[f];
         lowFrequency = f;
       }
+    }
+    if (lowFrequency !== 0) {
+      // console.log('low:', lowFrequency, 'high:', highFrequency)
     }
     return this.frequencyTable[lowFrequency] ?  this.frequencyTable[lowFrequency][highFrequency] : null;
   }
