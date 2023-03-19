@@ -95,7 +95,9 @@
       }
 
       function constructWindowPreamble(windowData){
-        return "G" + getChecksum(windowData);
+        const checksum = getChecksum(windowData);
+        console.log(`Checksum:${checksum}`);
+        return "G" + checksum;
       }
 
       function getChecksum(data){
@@ -230,6 +232,7 @@ async function sendRecursively() {
   console.log( "binary:", binary );
   console.log( "message:", frame[ "message" ] );
   var messagePreamble = await sendPacket(constructMessagePreamble(binary));
+  var windowPreamble = await sendPacket(constructWindowPreamble(binary));
   var sent = await sendPacket( binary + "J");
         //var sent = await sendPacket( frame[ "message" ] );
   console.log( sent );
