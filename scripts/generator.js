@@ -18,22 +18,22 @@ export class ToneGenerator {
   }
 
   start() {
-    playSound(697, length)
-    playSound(1776, length)
+    playSound(697, this.length)
+    playSound(1776, this.length)
   }
 
   stop() {
-    playSound(770, length)
-    playSound(1913, length)
+    playSound(770, this.length)
+    playSound(1913, this.length)
   }
 
   ack() {
-    playSound(697, length)
-    playSound(1913, length)
+    playSound(697, this.length)
+    playSound(1913, this.length)
   }
 
   nack() {
-    playSound(770, length)
-    playSound(1776, length)
+    playSound(770, this.length)
+    playSound(1776, this.length)
   }
 }

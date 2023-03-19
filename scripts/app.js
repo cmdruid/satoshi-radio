@@ -1,12 +1,21 @@
 import { visualize }      from './visualizer.js'
 import { ToneEmitter }    from './tone.js'
 import { ToneController } from './controller.js'
+
 const { Buff } = window.buffUtils
 
 globalThis.globalStream = null
 
-const msgbox = document.querySelector('#msgBox')
-const feedbox = document.querySelector('#feed')
+const msgbox   = document.querySelector('#msgBox')
+const feedbox  = document.querySelector('#feed')
+
+const testMsg = 'god'
+const hex = Buff.str(testMsg).hex
+console.log('test:', testMsg)
+console.log('length:', hex.length)
+console.log('hex:', hex)
+console.log('chksum:', Buff.hex(hex).digest.slice(-3).hex)
+
 
 if (navigator.mediaDevices.getUserMedia) {
   console.log('getUserMedia supported.');
@@ -25,8 +34,10 @@ if (navigator.mediaDevices.getUserMedia) {
     let feedbuffer = []
 
     emitter.on('*', (eventName, value) => {
-      feedbuffer.push()
-      console.log(eventName, value)
+      feedbuffer.push(`${eventName}: ${value}`)
+      feedbox.innerText = feedbuffer.join('\n')
+      // console.log(eventName, value)
+      if (feedbuffer.length > 2) feedbuffer.shift()
     })
 
     // emitter.on('data', (value) => {

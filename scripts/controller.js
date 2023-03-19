@@ -10,9 +10,10 @@ export class ToneController extends EventEmitter {
     this.source  = toneEmitter
     this.sounds  = new ToneGenerator()
     this.stage   = null
+    this.state   = null
     this.msgSize = null
     this.winSize = null
-    this.chkSize = 3
+    this.chkSize = 6
     this.buffer  = []
     this.chunks  = []
     this.reset()
@@ -66,7 +67,6 @@ export class ToneController extends EventEmitter {
   reset() {
     this.buffer  = []
     this.frames  = []
-    this.state   = null
     this.msgSize = null
     this.winSize = null
   }
@@ -98,24 +98,38 @@ export class ToneController extends EventEmitter {
         if (!this.checkMsgState()) {
           console.log('Failed to set message params!')
           this.reset()
+          this.sounds.nack()
         } else {
           this.stage = 'recvFrame'
           this.state = 'ready'
+          this.sounds.ack()
           console.log(this)
           return
         }
       }
     }
     if (this.stage === 'recvFrame') {
-      if (this.state === 'ready') {
-        // check message 
-        if (this.frameCt === this.totalFrames) {
-          console.log('message:', this.frames)
+      if (this.state === 'confirm') {
+        if (this.checkBuffer()) {
+          this.state = 'ready'
+          this.sounds.ack()
         } else {
-          this.frames.push(this.buffer)
-          this.buffer = []
+          this.sounds.nack()
+          this.state  = 'ready'
         }
       }
+    }
+  }
+
+  ack() {
+    if (this.state === 'confirm') {
+      this.state === 'accepted'
+    }
+  }
+
+  nack() {
+    if (this.state === 'confirm') {
+      this.state === 'rejected'
     }
   }
 
@@ -153,16 +167,16 @@ export class ToneController extends EventEmitter {
     this.buffer.push(value)
     const len = this.buffer.length
     if (len === this.buffSize) {
-      const payload = Buff.of(...this.buffer.slice(0, -this.chkSize)).hex
-      const chksum  = Buff.of(...this.buffer.slice(-this.chkSize)).hex
-      const calcsum = Buff.hex(payload).digest.slice(-this.chkSize).hex
+      const payload = Buff.of(...this.buffer)
+      const chksum  = payload.slice(-this.chkSize).hex
+      const calcsum = payload.slice(-this.chkSize).hex
       if (chksum !== calcsum) {
         console.log('checksum failed!')
         console.log(payload, chksum, calcsum)
         this.state = 'error'
-        this.sounds.nack()
       } else {
         this.chunks.push([...this.buffer])
+        this.state = 'confirm'
       }
       this.buffer = []
     }
@@ -179,19 +193,8 @@ export class ToneController extends EventEmitter {
     } else { return true }
   }
 
-  checkFrameState (value) {
-    if (this.frame === null) {
-      console.log('Failed to set paramaters:')
-      this.reset()
-      return false
-    } else { return true }
-  }
-
   checkBuffer () {
-    if (this.buffer.length > this.winSize) {
-      console.log('Buffer overflow!')
-      return false
-    } else { true }
+    return true
   }
 
 }
