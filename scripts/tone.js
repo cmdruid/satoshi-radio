@@ -16,7 +16,7 @@ const DEFAULT_CONFIG = {
   downsampleRate: 1,
   // gets passed to the goertzel object that gets created by the dtmf object. This is the noise threshold value.
   threshold: 0.005,
-  rateLimit: 50
+  rateLimit: 200
 }
 
 export class ToneEmitter extends EventEmitter {

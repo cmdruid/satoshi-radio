@@ -163,13 +163,22 @@ export class ToneController extends EventEmitter {
     }
   }
 
+  get windowSize () {
+    const current = this.chunks.length
+    const isFinal = current + 1 === this.totalFrames
+    // return (isFinal) 
+    //   ? 
+    //   : this.winSize
+  }
+
   setFrameData (value) {
     this.buffer.push(value)
-    const len = this.buffer.length
+    const len   = this.buffer.length
     if (len === this.buffSize) {
       const payload = Buff.of(...this.buffer)
-      const chksum  = payload.slice(-this.chkSize).hex
-      const calcsum = payload.slice(-this.chkSize).hex
+      const data    = payload.slice(this.checkSize).hex
+      const chksum  = payload.slice(0, this.chkSize).hex
+      const calcsum = Buff.hex(data).digest.slice(0, 3).hex
       if (chksum !== calcsum) {
         console.log('checksum failed!')
         console.log(payload, chksum, calcsum)
